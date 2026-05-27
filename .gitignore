@@ -1,0 +1,71 @@
+# Unity generated folders — rebuilt on open
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+BUILD/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+
+# WebGL build output (Cloud Build produces this)
+WebGL_Build/
+WebGLBuild/
+
+# Visual Studio cache & generated files
+.vs/
+[Ee]xported[Oo]bj/
+.consulo/
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+
+# Unity3D generated meta files
+*.pidb.meta
+*.pdb.meta
+*.mdb.meta
+
+# Unity3D generated file on crash reports
+sysinfo.txt
+
+# Builds
+*.apk
+*.aab
+*.unitypackage
+*.app
+
+# Crashlytics generated file
+crashlytics-build.properties
+
+# Packed Addressables
+/[Aa]ssets/[Aa]ddressable[Aa]ssets[Dd]ata/*/*.bin*
+
+# Temporary auto-generated Android Assets
+/[Aa]ssets/[Ss]treamingAssets/aa.meta
+/[Aa]ssets/[Ss]treamingAssets/aa/*
+
+# Build logs
+build.log
+build*.log
+*.lscache
+
+# OS-specific
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE local config
+.vscode/launch.json
+.vscode/settings.json
+.idea/
