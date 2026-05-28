@@ -21,12 +21,17 @@ public class SettingsPanel : MonoBehaviour
     {
         if (volumeSlider) { volumeSlider.value = SaveSystem.Volume; volumeSlider.onValueChanged.AddListener(OnVolumeChanged); }
         if (muteToggle) { muteToggle.isOn = SaveSystem.Muted; muteToggle.onValueChanged.AddListener(OnMuteChanged); }
-        if (resetButton) resetButton.onClick.AddListener(OnResetPressed);
         if (closeButton) closeButton.onClick.AddListener(OnClosePressed);
-        if (easyBtn) easyBtn.onClick.AddListener(() => SetDifficulty(0));
-        if (mediumBtn) mediumBtn.onClick.AddListener(() => SetDifficulty(1));
-        if (hardBtn) hardBtn.onClick.AddListener(() => SetDifficulty(2));
-        RefreshStats(); UpdateDifficultyDisplay();
+
+        // Difficulty (RTP) is now operator-controlled via the GameGacor admin panel — hide the
+        // player-facing EASY/MEDIUM/HARD toggle + the local RESET PROGRESS (balance is server-backed).
+        if (easyBtn) easyBtn.gameObject.SetActive(false);
+        if (mediumBtn) mediumBtn.gameObject.SetActive(false);
+        if (hardBtn) hardBtn.gameObject.SetActive(false);
+        if (difficultyLabel) difficultyLabel.gameObject.SetActive(false);
+        if (resetButton) resetButton.gameObject.SetActive(false);
+
+        RefreshStats();
     }
     void OnDisable() { if (volumeSlider) volumeSlider.onValueChanged.RemoveListener(OnVolumeChanged); if (muteToggle) muteToggle.onValueChanged.RemoveListener(OnMuteChanged); if (resetButton) resetButton.onClick.RemoveListener(OnResetPressed); if (closeButton) closeButton.onClick.RemoveListener(OnClosePressed); }
     private void OnVolumeChanged(float v) { if (AudioManager.Instance) AudioManager.Instance.SetVolume(v); }

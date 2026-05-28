@@ -20,6 +20,7 @@ public class ServerSync : MonoBehaviour
     [DllImport("__Internal")] private static extern IntPtr GG_GetUsername();
     [DllImport("__Internal")] private static extern void GG_FetchBalance(string goName, string method);
     [DllImport("__Internal")] private static extern void GG_RecordSpin(int bet, int win, string tier, int scatters, int isFree, string goName, string method);
+    [DllImport("__Internal")] private static extern void GG_GetDifficulty(string goName, string method);
     [DllImport("__Internal")] private static extern void GG_BackToLobby();
     [DllImport("__Internal")] private static extern void GG_Log(string msg);
 
@@ -63,6 +64,24 @@ public class ServerSync : MonoBehaviour
 #if UNITY_WEBGL && !UNITY_EDITOR
         GG_FetchBalance(gameObject.name, nameof(OnBalanceResponse));
 #endif
+    }
+
+    // Operator-controlled difficulty (RTP). Fetched from /api/game-config on start;
+    // applies to SaveSystem.DifficultyLevel so reels use the admin-set weight table.
+    public void FetchDifficulty()
+    {
+#if UNITY_WEBGL && !UNITY_EDITOR
+        GG_GetDifficulty(gameObject.name, nameof(OnDifficultyResponse));
+#endif
+    }
+
+    public void OnDifficultyResponse(string json)
+    {
+        var r = JsonUtility.FromJson<DifficultyResponse>(json);
+        if (r == null) return;
+        int level = Mathf.Clamp(r.difficulty, 0, 2);
+        SaveSystem.DifficultyLevel = level;
+        if (GameManager.Instance != null) GameManager.Instance.RefreshReelStrips();
     }
 
     public void RecordSpin(int bet, int win, string tier, int scatterCount, bool isFreeSpin)
@@ -112,5 +131,11 @@ public class ServerSync : MonoBehaviour
         public int balance;
         public string username;
         public string error;
+    }
+
+    [Serializable]
+    private class DifficultyResponse {
+        public bool ok;
+        public int difficulty;
     }
 }

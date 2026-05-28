@@ -92,6 +92,24 @@ mergeInto(LibraryManager.library, {
   },
 
   // ============================================================
+  // GET /api/game-config?game=knight -> operator-set difficulty (0/1/2)
+  // Public endpoint (no auth) — difficulty is global game config, not user data.
+  // ============================================================
+  GG_GetDifficulty: function (goNamePtr, methodPtr) {
+    var goName = UTF8ToString(goNamePtr);
+    var method = UTF8ToString(methodPtr);
+    fetch('/api/game-config?game=knight')
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        var diff = (d && typeof d.difficulty === 'number') ? d.difficulty : 1;
+        try { SendMessage(goName, method, JSON.stringify({ ok: true, difficulty: diff })); } catch (e) {}
+      })
+      .catch(function () {
+        try { SendMessage(goName, method, JSON.stringify({ ok: false, difficulty: 1 })); } catch (e) {}
+      });
+  },
+
+  // ============================================================
   // Navigation: back to lobby
   // ============================================================
   GG_BackToLobby: function () {

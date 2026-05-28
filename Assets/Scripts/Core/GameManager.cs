@@ -36,7 +36,11 @@ public class GameManager : MonoBehaviour
         AchievementManager.OnUnlocked += OnAchievementUnlocked;
         if (autoSpin != null) autoSpin.OnRemainingChanged += OnAutoSpinChanged;
         // Pull server-authoritative balance (lobby session) — overrides local PlayerPrefs when online.
-        if (ServerSync.Instance != null && ServerSync.Instance.IsOnline) ServerSync.Instance.FetchBalance();
+        // Always fetch operator-set difficulty (public game config, even for guests).
+        if (ServerSync.Instance != null) {
+            if (ServerSync.Instance.IsOnline) ServerSync.Instance.FetchBalance();
+            ServerSync.Instance.FetchDifficulty();
+        }
     }
 
     void OnDestroy() { AchievementManager.OnUnlocked -= OnAchievementUnlocked; if (autoSpin != null) autoSpin.OnRemainingChanged -= OnAutoSpinChanged; SaveSystem.Flush(); }

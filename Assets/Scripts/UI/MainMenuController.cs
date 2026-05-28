@@ -16,7 +16,8 @@ public class MainMenuController : MonoBehaviour
     {
         if (playButton) playButton.onClick.AddListener(OnPlay);
         if (settingsButton) settingsButton.onClick.AddListener(OnSettings);
-        if (quitButton) quitButton.onClick.AddListener(OnQuit);
+        // QUIT removed for web build — players close the tab or use the ← LOBBY top-bar button instead.
+        if (quitButton) quitButton.gameObject.SetActive(false);
         ShowMenu(true);
     }
 
