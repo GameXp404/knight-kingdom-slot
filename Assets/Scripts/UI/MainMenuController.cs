@@ -15,7 +15,8 @@ public class MainMenuController : MonoBehaviour
     void Start()
     {
         if (playButton) playButton.onClick.AddListener(OnPlay);
-        if (settingsButton) settingsButton.onClick.AddListener(OnSettings);
+        // SETTINGS hidden on title — audio reachable in-game via MENU > SOUND.
+        if (settingsButton) settingsButton.gameObject.SetActive(false);
         // QUIT removed for web build — players close the tab or use the ← LOBBY top-bar button instead.
         if (quitButton) quitButton.gameObject.SetActive(false);
         ShowMenu(true);

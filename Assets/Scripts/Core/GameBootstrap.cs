@@ -339,6 +339,8 @@ public class GameBootstrap : MonoBehaviour
         setTxt.fontSize = 30; setTxt.fontStyle = FontStyles.Bold;
         ApplyGoldGradient(setTxt);
         uiController.settingsButton = settingsBtn;
+        // In-game SET button hidden — audio reachable via MENU > SOUND.
+        settingsBtn.gameObject.SetActive(false);
 
         var infoBtn = MakeButton(header.transform, "INFO", new Vector2(110, 80), Color.white);
         infoBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(760, 0);
@@ -691,8 +693,8 @@ public class GameBootstrap : MonoBehaviour
 
     private GameObject BuildMenuPopup(Transform parent)
     {
-        var popup = MakePanel(parent, "MenuPopup", new Vector2(450, -180), new Vector2(220, 560), new Color(0.05f, 0.03f, 0.05f, 0.88f));
-        var border = MakeImage(popup.transform, "Border", Vector2.zero, new Vector2(228, 568), accentGold);
+        var popup = MakePanel(parent, "MenuPopup", new Vector2(450, -180), new Vector2(220, 640), new Color(0.05f, 0.03f, 0.05f, 0.88f));
+        var border = MakeImage(popup.transform, "Border", Vector2.zero, new Vector2(228, 648), accentGold);
         border.transform.SetAsFirstSibling();
 
         var turboBtn = MakeButton(popup.transform, SaveSystem.TurboMode ? "TURBO: ON" : "TURBO: OFF", new Vector2(180, 65), Color.white);
@@ -754,6 +756,18 @@ public class GameBootstrap : MonoBehaviour
         payTxt.fontSize = 28; payTxt.fontStyle = FontStyles.Bold;
         ApplyGoldGradient(payTxt);
         payButton = paytableBtn;
+
+        // SOUND: opens the existing (proven) settings panel — volume slider + mute live there.
+        var soundBtn = MakeButton(popup.transform, "SOUND", new Vector2(180, 65), Color.white);
+        soundBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, -285);
+        StyleAsGoldButton(soundBtn);
+        var soundTxt = soundBtn.GetComponentInChildren<TextMeshProUGUI>();
+        soundTxt.fontSize = 28; soundTxt.fontStyle = FontStyles.Bold;
+        ApplyGoldGradient(soundTxt);
+        soundBtn.onClick.AddListener(() => {
+            if (settingsObj != null) settingsObj.SetActive(true);
+            if (AudioManager.Instance != null) AudioManager.Instance.PlayClick();
+        });
 
         return popup;
     }
