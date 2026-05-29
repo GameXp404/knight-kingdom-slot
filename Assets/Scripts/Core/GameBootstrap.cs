@@ -339,8 +339,6 @@ public class GameBootstrap : MonoBehaviour
         setTxt.fontSize = 30; setTxt.fontStyle = FontStyles.Bold;
         ApplyGoldGradient(setTxt);
         uiController.settingsButton = settingsBtn;
-        // In-game SET button removed — volume/mute moved into the MENU popup; difficulty is operator-set via admin.
-        settingsBtn.gameObject.SetActive(false);
 
         var infoBtn = MakeButton(header.transform, "INFO", new Vector2(110, 80), Color.white);
         infoBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(760, 0);
@@ -693,63 +691,12 @@ public class GameBootstrap : MonoBehaviour
 
     private GameObject BuildMenuPopup(Transform parent)
     {
-        // Taller popup: now also hosts Volume + Mute (the standalone title SETTINGS + in-game SET buttons were removed).
-        var popup = MakePanel(parent, "MenuPopup", new Vector2(450, -40), new Vector2(250, 800), new Color(0.05f, 0.03f, 0.05f, 0.92f));
-        var border = MakeImage(popup.transform, "Border", Vector2.zero, new Vector2(258, 808), accentGold);
+        var popup = MakePanel(parent, "MenuPopup", new Vector2(450, -180), new Vector2(220, 560), new Color(0.05f, 0.03f, 0.05f, 0.88f));
+        var border = MakeImage(popup.transform, "Border", Vector2.zero, new Vector2(228, 568), accentGold);
         border.transform.SetAsFirstSibling();
 
-        // --- VOLUME label + −/+ buttons (NO Slider component — Slider caused a WebGL load-time recursion crash in build #8) ---
-        var volLabel = MakeText(popup.transform, "VOLUME", 24, accentGold, TextAlignmentOptions.Center);
-        volLabel.rectTransform.anchoredPosition = new Vector2(0, 350);
-        volLabel.rectTransform.sizeDelta = new Vector2(210, 34);
-        volLabel.fontStyle = FontStyles.Bold;
-        ApplyGoldGradient(volLabel);
-
-        var volVal = MakeText(popup.transform, Mathf.RoundToInt(SaveSystem.Volume * 100f) + "%", 26, Color.white, TextAlignmentOptions.Center);
-        volVal.rectTransform.anchoredPosition = new Vector2(0, 305);
-        volVal.rectTransform.sizeDelta = new Vector2(90, 40);
-        volVal.fontStyle = FontStyles.Bold;
-        ApplyGoldGradient(volVal);
-
-        var volDown = MakeButton(popup.transform, "−", new Vector2(62, 56), Color.white);
-        volDown.GetComponent<RectTransform>().anchoredPosition = new Vector2(-78, 305);
-        StyleAsGoldButton(volDown);
-        var vdTxt = volDown.GetComponentInChildren<TextMeshProUGUI>(); vdTxt.fontSize = 40; vdTxt.fontStyle = FontStyles.Bold; ApplyGoldGradient(vdTxt);
-        volDown.onClick.AddListener(() => {
-            float nv = Mathf.Clamp01(SaveSystem.Volume - 0.1f);
-            if (AudioManager.Instance != null) AudioManager.Instance.SetVolume(nv); else SaveSystem.Volume = nv;
-            volVal.text = Mathf.RoundToInt(nv * 100f) + "%";
-            if (AudioManager.Instance != null) AudioManager.Instance.PlayClick();
-        });
-
-        var volUp = MakeButton(popup.transform, "+", new Vector2(62, 56), Color.white);
-        volUp.GetComponent<RectTransform>().anchoredPosition = new Vector2(78, 305);
-        StyleAsGoldButton(volUp);
-        var vuTxt = volUp.GetComponentInChildren<TextMeshProUGUI>(); vuTxt.fontSize = 40; vuTxt.fontStyle = FontStyles.Bold; ApplyGoldGradient(vuTxt);
-        volUp.onClick.AddListener(() => {
-            float nv = Mathf.Clamp01(SaveSystem.Volume + 0.1f);
-            if (AudioManager.Instance != null) AudioManager.Instance.SetVolume(nv); else SaveSystem.Volume = nv;
-            volVal.text = Mathf.RoundToInt(nv * 100f) + "%";
-            if (AudioManager.Instance != null) AudioManager.Instance.PlayClick();
-        });
-
-        // --- MUTE toggle button ---
-        var muteBtn = MakeButton(popup.transform, SaveSystem.Muted ? "MUTE: ON" : "MUTE: OFF", new Vector2(190, 60), Color.white);
-        muteBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 240);
-        StyleAsGoldButton(muteBtn);
-        var muteTxt = muteBtn.GetComponentInChildren<TextMeshProUGUI>();
-        muteTxt.fontSize = 26; muteTxt.fontStyle = FontStyles.Bold;
-        ApplyGoldGradient(muteTxt);
-        muteBtn.onClick.AddListener(() => {
-            bool cur = (AudioManager.Instance != null) ? AudioManager.Instance.IsMuted() : SaveSystem.Muted;
-            bool now = !cur;
-            if (AudioManager.Instance != null) AudioManager.Instance.SetMuted(now); else SaveSystem.Muted = now;
-            muteTxt.text = now ? "MUTE: ON" : "MUTE: OFF";
-            if (AudioManager.Instance != null) AudioManager.Instance.PlayClick();
-        });
-
         var turboBtn = MakeButton(popup.transform, SaveSystem.TurboMode ? "TURBO: ON" : "TURBO: OFF", new Vector2(180, 65), Color.white);
-        turboBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 165);
+        turboBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 240);
         StyleAsGoldButton(turboBtn);
         var turboTxt = turboBtn.GetComponentInChildren<TextMeshProUGUI>();
         turboTxt.fontSize = 26; turboTxt.fontStyle = FontStyles.Bold;
@@ -761,7 +708,7 @@ public class GameBootstrap : MonoBehaviour
         });
 
         var autoBtn = MakeButton(popup.transform, "AUTO 10", new Vector2(180, 65), Color.white);
-        autoBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 90);
+        autoBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 165);
         StyleAsGoldButton(autoBtn);
         var autoBtnTxt = autoBtn.GetComponentInChildren<TextMeshProUGUI>();
         autoBtnTxt.fontSize = 28; autoBtnTxt.fontStyle = FontStyles.Bold;
@@ -769,7 +716,7 @@ public class GameBootstrap : MonoBehaviour
         uiController.autoSpinButton = autoBtn;
 
         var stopAutoBtn = MakeButton(popup.transform, "STOP", new Vector2(180, 65), Color.white);
-        stopAutoBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 15);
+        stopAutoBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 90);
         StyleAsGoldButton(stopAutoBtn);
         var stopTxt = stopAutoBtn.GetComponentInChildren<TextMeshProUGUI>();
         stopTxt.fontSize = 28; stopTxt.fontStyle = FontStyles.Bold;
@@ -777,7 +724,7 @@ public class GameBootstrap : MonoBehaviour
         uiController.stopAutoButton = stopAutoBtn;
 
         var bonusBtn = MakeButton(popup.transform, "BONUS", new Vector2(180, 65), Color.white);
-        bonusBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, -60);
+        bonusBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 15);
         StyleAsGoldButton(bonusBtn);
         var bonusTxt = bonusBtn.GetComponentInChildren<TextMeshProUGUI>();
         bonusTxt.fontSize = 28; bonusTxt.fontStyle = FontStyles.Bold;
@@ -785,7 +732,7 @@ public class GameBootstrap : MonoBehaviour
         uiController.bonusButton = bonusBtn;
 
         var historyBtn = MakeButton(popup.transform, "LOG", new Vector2(180, 65), Color.white);
-        historyBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, -135);
+        historyBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, -60);
         StyleAsGoldButton(historyBtn);
         var logTxt = historyBtn.GetComponentInChildren<TextMeshProUGUI>();
         logTxt.fontSize = 28; logTxt.fontStyle = FontStyles.Bold;
@@ -793,7 +740,7 @@ public class GameBootstrap : MonoBehaviour
         uiController.historyButton = historyBtn;
 
         var achBtn = MakeButton(popup.transform, "TRO", new Vector2(180, 65), Color.white);
-        achBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, -210);
+        achBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, -135);
         StyleAsGoldButton(achBtn);
         var troTxt = achBtn.GetComponentInChildren<TextMeshProUGUI>();
         troTxt.fontSize = 28; troTxt.fontStyle = FontStyles.Bold;
@@ -801,7 +748,7 @@ public class GameBootstrap : MonoBehaviour
         uiController.achievementButton = achBtn;
 
         var paytableBtn = MakeButton(popup.transform, "PAY", new Vector2(180, 65), Color.white);
-        paytableBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, -285);
+        paytableBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, -210);
         StyleAsGoldButton(paytableBtn);
         var payTxt = paytableBtn.GetComponentInChildren<TextMeshProUGUI>();
         payTxt.fontSize = 28; payTxt.fontStyle = FontStyles.Bold;

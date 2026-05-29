@@ -15,8 +15,7 @@ public class MainMenuController : MonoBehaviour
     void Start()
     {
         if (playButton) playButton.onClick.AddListener(OnPlay);
-        // SETTINGS removed from the title screen — volume/mute now live in the in-game MENU popup.
-        if (settingsButton) settingsButton.gameObject.SetActive(false);
+        if (settingsButton) settingsButton.onClick.AddListener(OnSettings);
         // QUIT removed for web build — players close the tab or use the ← LOBBY top-bar button instead.
         if (quitButton) quitButton.gameObject.SetActive(false);
         ShowMenu(true);
