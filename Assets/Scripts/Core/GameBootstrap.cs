@@ -698,27 +698,40 @@ public class GameBootstrap : MonoBehaviour
         var border = MakeImage(popup.transform, "Border", Vector2.zero, new Vector2(258, 808), accentGold);
         border.transform.SetAsFirstSibling();
 
-        // --- VOLUME label + slider (moved here from the old SETTINGS modal) ---
+        // --- VOLUME label + −/+ buttons (NO Slider component — Slider caused a WebGL load-time recursion crash in build #8) ---
         var volLabel = MakeText(popup.transform, "VOLUME", 24, accentGold, TextAlignmentOptions.Center);
         volLabel.rectTransform.anchoredPosition = new Vector2(0, 350);
         volLabel.rectTransform.sizeDelta = new Vector2(210, 34);
         volLabel.fontStyle = FontStyles.Bold;
         ApplyGoldGradient(volLabel);
 
-        var sliderGo = new GameObject("VolumeSlider", typeof(RectTransform), typeof(Image), typeof(Slider));
-        sliderGo.transform.SetParent(popup.transform, false);
-        var srt = sliderGo.GetComponent<RectTransform>();
-        srt.anchorMin = srt.anchorMax = new Vector2(0.5f, 0.5f); srt.pivot = new Vector2(0.5f, 0.5f);
-        srt.sizeDelta = new Vector2(190, 26); srt.anchoredPosition = new Vector2(0, 305);
-        sliderGo.GetComponent<Image>().color = new Color(0.2f, 0.2f, 0.3f);
-        var slider = sliderGo.GetComponent<Slider>(); slider.minValue = 0f; slider.maxValue = 1f;
-        var fillGo = new GameObject("Fill", typeof(RectTransform), typeof(Image));
-        fillGo.transform.SetParent(sliderGo.transform, false);
-        fillGo.GetComponent<Image>().color = accentGold;
-        var frt = fillGo.GetComponent<RectTransform>(); frt.anchorMin = Vector2.zero; frt.anchorMax = Vector2.one; frt.offsetMin = Vector2.zero; frt.offsetMax = Vector2.zero;
-        slider.fillRect = frt;
-        slider.value = SaveSystem.Volume;
-        slider.onValueChanged.AddListener(v => { if (AudioManager.Instance != null) AudioManager.Instance.SetVolume(v); });
+        var volVal = MakeText(popup.transform, Mathf.RoundToInt(SaveSystem.Volume * 100f) + "%", 26, Color.white, TextAlignmentOptions.Center);
+        volVal.rectTransform.anchoredPosition = new Vector2(0, 305);
+        volVal.rectTransform.sizeDelta = new Vector2(90, 40);
+        volVal.fontStyle = FontStyles.Bold;
+        ApplyGoldGradient(volVal);
+
+        var volDown = MakeButton(popup.transform, "−", new Vector2(62, 56), Color.white);
+        volDown.GetComponent<RectTransform>().anchoredPosition = new Vector2(-78, 305);
+        StyleAsGoldButton(volDown);
+        var vdTxt = volDown.GetComponentInChildren<TextMeshProUGUI>(); vdTxt.fontSize = 40; vdTxt.fontStyle = FontStyles.Bold; ApplyGoldGradient(vdTxt);
+        volDown.onClick.AddListener(() => {
+            float nv = Mathf.Clamp01(SaveSystem.Volume - 0.1f);
+            if (AudioManager.Instance != null) AudioManager.Instance.SetVolume(nv); else SaveSystem.Volume = nv;
+            volVal.text = Mathf.RoundToInt(nv * 100f) + "%";
+            if (AudioManager.Instance != null) AudioManager.Instance.PlayClick();
+        });
+
+        var volUp = MakeButton(popup.transform, "+", new Vector2(62, 56), Color.white);
+        volUp.GetComponent<RectTransform>().anchoredPosition = new Vector2(78, 305);
+        StyleAsGoldButton(volUp);
+        var vuTxt = volUp.GetComponentInChildren<TextMeshProUGUI>(); vuTxt.fontSize = 40; vuTxt.fontStyle = FontStyles.Bold; ApplyGoldGradient(vuTxt);
+        volUp.onClick.AddListener(() => {
+            float nv = Mathf.Clamp01(SaveSystem.Volume + 0.1f);
+            if (AudioManager.Instance != null) AudioManager.Instance.SetVolume(nv); else SaveSystem.Volume = nv;
+            volVal.text = Mathf.RoundToInt(nv * 100f) + "%";
+            if (AudioManager.Instance != null) AudioManager.Instance.PlayClick();
+        });
 
         // --- MUTE toggle button ---
         var muteBtn = MakeButton(popup.transform, SaveSystem.Muted ? "MUTE: ON" : "MUTE: OFF", new Vector2(190, 60), Color.white);
