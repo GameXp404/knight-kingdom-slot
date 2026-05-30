@@ -174,7 +174,7 @@ public class GameManager : MonoBehaviour
             freeSpinsRemaining = Mathf.Min(freeSpinsRemaining + award, 200);
             fsMultiplier = 1; // start the Emperor multiplier ladder fresh
             if (ui != null) {
-                ui.UpdateFreeSpins(freeSpinsRemaining, fsMultiplier);
+                ui.UpdateFreeSpins(freeSpinsRemaining);
                 ui.ShowAchievementToastRaw($"<color=#ffd700>★ {scatterCount} SCATTER!</color>\n<size=80%>+{scatterPay:N0} koin & +{award} free spin — perkalian NAIK tiap menang!</size>");
             }
             if (AudioManager.Instance != null) AudioManager.Instance.PlayWin(2);
@@ -233,8 +233,12 @@ public class GameManager : MonoBehaviour
 
         if (isFreeSpin) {
             freeSpinsRemaining--;
-            if (totalWin > 0) fsMultiplier = Mathf.Min(fsMultiplier + 1, 10); // Emperor ladder climbs on every winning free spin
-            if (ui != null) ui.UpdateFreeSpins(freeSpinsRemaining, fsMultiplier);
+            if (totalWin > 0) {
+                int prev = fsMultiplier;
+                fsMultiplier = Mathf.Min(fsMultiplier + 1, 10); // Emperor ladder climbs on every winning free spin
+                if (fsMultiplier != prev && ui != null) ui.ShowAchievementToastRaw($"<color=#ffd700>⚡ PERKALIAN ×{fsMultiplier}!</color>");
+            }
+            if (ui != null) ui.UpdateFreeSpins(freeSpinsRemaining);
         }
 
         if (freeSpinsRemaining > 0) {
