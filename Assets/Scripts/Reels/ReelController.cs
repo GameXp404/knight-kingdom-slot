@@ -112,6 +112,51 @@ public class ReelController : MonoBehaviour
             if (symbolImages[i] != null) symbolImages[i].rectTransform.localScale = Vector3.one;
     }
 
+    // BATCH 2: DRAGON WILD EXPAND — turn this whole reel column into Wild (Dragon) + a fire eruption.
+    public void ExpandToWild()
+    {
+        var wildSprite = SymbolDatabase.GetSprite(SymbolDatabase.WildSymbol);
+        int rows = visibleSymbols.Length;
+        for (int i = 0; i < rows; i++)
+        {
+            visibleSymbols[i] = SymbolDatabase.WildSymbol;
+            if (i < symbolImages.Length && symbolImages[i] != null)
+            {
+                if (wildSprite != null) { symbolImages[i].sprite = wildSprite; symbolImages[i].color = Color.white; }
+                else { symbolImages[i].sprite = null; symbolImages[i].color = SymbolDatabase.GetColor(SymbolDatabase.WildSymbol); }
+                if (i < symbolLabels.Length && symbolLabels[i] != null) symbolLabels[i].text = "";
+            }
+        }
+        StartCoroutine(ExpandFireFx(rows));
+    }
+
+    private IEnumerator ExpandFireFx(int rows)
+    {
+        Color fire = new Color(1f, 0.55f, 0.10f);
+        float dur = 0.5f;
+        float t = 0f;
+        while (t < dur)
+        {
+            t += Time.deltaTime;
+            float p = Mathf.Clamp01(t / dur);
+            float glow = Mathf.Sin(p * Mathf.PI); // 0 → 1 → 0
+            float s = 1f + glow * 0.13f;
+            for (int i = 0; i < rows; i++)
+            {
+                if (i >= symbolImages.Length || symbolImages[i] == null) continue;
+                symbolImages[i].rectTransform.localScale = new Vector3(s, s, 1f);
+                symbolImages[i].color = Color.Lerp(Color.white, fire, glow * 0.65f);
+            }
+            yield return null;
+        }
+        for (int i = 0; i < rows; i++)
+        {
+            if (i >= symbolImages.Length || symbolImages[i] == null) continue;
+            symbolImages[i].rectTransform.localScale = Vector3.one;
+            symbolImages[i].color = Color.white;
+        }
+    }
+
     private void Render()
     {
         int displayCount = symbolImages.Length;

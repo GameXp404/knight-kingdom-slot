@@ -180,6 +180,13 @@ public class UIController : MonoBehaviour
     public void UpdateJackpot(int v) { if (jackpotText) jackpotText.text = $"JACKPOT: {v:N0}"; }
     public void UpdateAutoSpin(int v) { if (autoSpinText) autoSpinText.text = v > 0 ? $"AUTO: {v}" : ""; }
     public void UpdateFreeSpins(int v) { if (freeSpinText) freeSpinText.text = v > 0 ? $"FREE SPINS: {v}" : ""; }
+    // BATCH 2: Emperor's Free Spins — show the climbing multiplier next to the free-spin count.
+    public void UpdateFreeSpins(int v, int mult)
+    {
+        if (freeSpinText == null) return;
+        if (v > 0) freeSpinText.text = mult > 1 ? $"FREE SPINS: {v}   <color=#FFD700>×{mult}</color>" : $"FREE SPINS: {v}";
+        else freeSpinText.text = "";
+    }
 
     public void ShowAchievementToast(Achievement a)
     {

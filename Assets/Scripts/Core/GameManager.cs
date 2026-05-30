@@ -23,6 +23,7 @@ public class GameManager : MonoBehaviour
 
     private bool isSpinning;
     private int freeSpinsRemaining;
+    private int fsMultiplier = 1; // Emperor's Free Spins: climbing win multiplier (+1 per winning FS, cap x10)
     private SymbolType[,] grid = new SymbolType[PaylineSystem.Reels, PaylineSystem.Rows];
 
     public const int FreeSpinsPerScatter = 10;
@@ -153,10 +154,13 @@ public class GameManager : MonoBehaviour
         EnforceMaxOnePerReel(SymbolDatabase.ScatterSymbol);
         EnforceMaxOnePerReel(SymbolDatabase.WildSymbol);
 
+        // BATCH 2: DRAGON WILD EXPAND — any reel showing a Wild erupts to a full Wild column (+ fire)
+        yield return ExpandDragonWilds();
+
         var wins = PaylineSystem.Evaluate(grid, bet);
         int totalWin = 0;
         foreach (var w in wins) totalWin += w.payout;
-        if (isFreeSpin) totalWin *= FreeSpinMultiplier;
+        if (isFreeSpin) totalWin *= fsMultiplier;
 
         bool isJackpot = false;
         if (JackpotPool.TryHitJackpot()) { totalWin += JackpotPool.Claim(); isJackpot = true; }
@@ -171,9 +175,10 @@ public class GameManager : MonoBehaviour
         if (scatterCount >= 3 && !isFreeSpin) {
             int award = scatterCount >= 5 ? 150 : (scatterCount == 4 ? 50 : 10);
             freeSpinsRemaining = Mathf.Min(freeSpinsRemaining + award, 200);
+            fsMultiplier = 1; // start the Emperor multiplier ladder fresh
             if (ui != null) {
-                ui.UpdateFreeSpins(freeSpinsRemaining);
-                ui.ShowAchievementToastRaw($"<color=#ffd700>★ {scatterCount} SCATTER!</color>\n<size=80%>+{scatterPay:N0} koin & +{award} free spin (x{FreeSpinMultiplier})</size>");
+                ui.UpdateFreeSpins(freeSpinsRemaining, fsMultiplier);
+                ui.ShowAchievementToastRaw($"<color=#ffd700>★ {scatterCount} SCATTER!</color>\n<size=80%>+{scatterPay:N0} koin & +{award} free spin — perkalian NAIK tiap menang!</size>");
             }
             if (AudioManager.Instance != null) AudioManager.Instance.PlayWin(2);
             if (ScreenFlash.Instance != null) ScreenFlash.Instance.Flash(new Color(1f, 0.8f, 0.2f), 0.6f, 0.85f);
@@ -181,8 +186,7 @@ public class GameManager : MonoBehaviour
             if (winPopup != null) yield return winPopup.ShowFreeSpins(award);
         }
         else if (scatterCount >= 3 && isFreeSpin) {
-            int scatterPayMultiplied = scatterPay * FreeSpinMultiplier;
-            if (ui != null) ui.ShowAchievementToastRaw($"<color=#ffd700>★ {scatterCount} SCATTER!</color>\n<size=80%>+{scatterPayMultiplied:N0} koin (x{FreeSpinMultiplier} multiplier)</size>");
+            if (ui != null) ui.ShowAchievementToastRaw($"<color=#ffd700>★ {scatterCount} SCATTER!</color>\n<size=80%>perkalian ×{fsMultiplier}!</size>");
             if (AudioManager.Instance != null) AudioManager.Instance.PlayWin(1);
         }
 
@@ -232,7 +236,8 @@ public class GameManager : MonoBehaviour
 
         if (isFreeSpin) {
             freeSpinsRemaining--;
-            if (ui != null) ui.UpdateFreeSpins(freeSpinsRemaining);
+            if (totalWin > 0) fsMultiplier = Mathf.Min(fsMultiplier + 1, 10); // Emperor ladder climbs on every winning free spin
+            if (ui != null) ui.UpdateFreeSpins(freeSpinsRemaining, fsMultiplier);
         }
 
         if (freeSpinsRemaining > 0) {
@@ -241,6 +246,31 @@ public class GameManager : MonoBehaviour
         } else if (autoSpin != null && autoSpin.IsActive) {
             autoSpin.Decrement();
             if (autoSpin.IsActive && SaveSystem.Currency >= SaveSystem.Bet) { yield return new WaitForSeconds(turbo ? 0.1f : autoSpinInterval); TrySpin(); }
+        }
+    }
+
+    // BATCH 2: DRAGON WILD EXPAND — every reel that shows a Wild becomes a full Wild column (+ fire eruption).
+    private IEnumerator ExpandDragonWilds()
+    {
+        bool any = false;
+        for (int r = 0; r < reels.Length; r++)
+        {
+            bool hasWild = false;
+            for (int row = 0; row < PaylineSystem.Rows; row++)
+                if (grid[r, row] == SymbolDatabase.WildSymbol) { hasWild = true; break; }
+            if (hasWild)
+            {
+                for (int row = 0; row < PaylineSystem.Rows; row++) grid[r, row] = SymbolDatabase.WildSymbol;
+                if (reels[r] != null) reels[r].ExpandToWild();
+                any = true;
+            }
+        }
+        if (any)
+        {
+            if (AudioManager.Instance != null) AudioManager.Instance.PlayWin(1);
+            if (ScreenShake.Instance != null) ScreenShake.Instance.Shake(0.4f, 12f);
+            if (ScreenFlash.Instance != null) ScreenFlash.Instance.Flash(new Color(1f, 0.5f, 0.1f), 0.4f, 0.5f);
+            yield return new WaitForSeconds(0.55f);
         }
     }
 
