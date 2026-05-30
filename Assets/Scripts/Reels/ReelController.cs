@@ -38,6 +38,9 @@ public class ReelController : MonoBehaviour
         if (IsBusy) return;
         IsBusy = true;
         spinning = true;
+        // JUICE: clear any leftover land-pop / win-pulse scale from the previous round
+        for (int i = 0; i < symbolImages.Length; i++)
+            if (symbolImages[i] != null) symbolImages[i].rectTransform.localScale = Vector3.one;
     }
 
     public void StopAt(int targetTopIndex, System.Action callback)
@@ -87,7 +90,26 @@ public class ReelController : MonoBehaviour
 
         IsBusy = false;
         stopRoutine = null;
+        StartCoroutine(LandBounce());
         onStopped?.Invoke();
+    }
+
+    // JUICE: quick scale "pop" when a reel lands — tactile landing feedback.
+    private IEnumerator LandBounce()
+    {
+        float dur = 0.16f;
+        float t = 0f;
+        while (t < dur)
+        {
+            t += Time.deltaTime;
+            float p = Mathf.Clamp01(t / dur);
+            float s = 1f + Mathf.Sin(p * Mathf.PI) * 0.07f; // 1 → 1.07 → 1
+            for (int i = 0; i < symbolImages.Length; i++)
+                if (symbolImages[i] != null) symbolImages[i].rectTransform.localScale = new Vector3(s, s, 1f);
+            yield return null;
+        }
+        for (int i = 0; i < symbolImages.Length; i++)
+            if (symbolImages[i] != null) symbolImages[i].rectTransform.localScale = Vector3.one;
     }
 
     private void Render()

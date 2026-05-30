@@ -135,13 +135,15 @@ public class GameManager : MonoBehaviour
                     Debug.Log($"[Anticipation] Reel {i+1} SLOWS DOWN — {scattersSoFar} scatter landed!");
                     if (AudioManager.Instance != null) AudioManager.Instance.PlaySpin();
                     if (ScreenShake.Instance != null) ScreenShake.Instance.Shake(0.3f, 6f);
+                    // JUICE: golden flash to spotlight the scatter tension moment
+                    if (ScreenFlash.Instance != null) ScreenFlash.Instance.Flash(new Color(1f, 0.85f, 0.3f), 0.45f, 0.4f);
                 }
             }
 
             bool done = false;
             reels[i].StopAt(target, () => done = true);
             while (!done) yield return null;
-            if (AudioManager.Instance != null) AudioManager.Instance.PlayStop();
+            if (AudioManager.Instance != null) AudioManager.Instance.PlayStopPitched(i);
         }
 
         for (int r = 0; r < reels.Length; r++)

@@ -118,6 +118,18 @@ public class AudioManager : MonoBehaviour
 
     public void PlaySpin() { if (clipSpin != null) sfxSource.PlayOneShot(clipSpin); }
     public void PlayStop() { if (clipStop != null) sfxSource.PlayOneShot(clipStop, 0.7f); }
+    // JUICE: reel-stop blip that climbs in pitch per reel (builds tension across the spin).
+    // Uses the spare SFX layer source so pitch changes don't affect other sounds.
+    public void PlayStopPitched(int reelIndex)
+    {
+        if (clipStop == null) return;
+        if (sfxLayerSource != null)
+        {
+            sfxLayerSource.pitch = Mathf.Clamp(1.0f + reelIndex * 0.09f, 1.0f, 1.6f);
+            sfxLayerSource.PlayOneShot(clipStop, 0.75f);
+        }
+        else sfxSource.PlayOneShot(clipStop, 0.7f);
+    }
     public void PlayClick() { if (clipClick != null) sfxSource.PlayOneShot(clipClick, 0.6f); }
     public void PlayWin(int tier)
     {
