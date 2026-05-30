@@ -154,9 +154,6 @@ public class GameManager : MonoBehaviour
         EnforceMaxOnePerReel(SymbolDatabase.ScatterSymbol);
         EnforceMaxOnePerReel(SymbolDatabase.WildSymbol);
 
-        // BATCH 2: DRAGON WILD EXPAND — any reel showing a Wild erupts to a full Wild column (+ fire)
-        yield return ExpandDragonWilds();
-
         var wins = PaylineSystem.Evaluate(grid, bet);
         int totalWin = 0;
         foreach (var w in wins) totalWin += w.payout;
@@ -246,31 +243,6 @@ public class GameManager : MonoBehaviour
         } else if (autoSpin != null && autoSpin.IsActive) {
             autoSpin.Decrement();
             if (autoSpin.IsActive && SaveSystem.Currency >= SaveSystem.Bet) { yield return new WaitForSeconds(turbo ? 0.1f : autoSpinInterval); TrySpin(); }
-        }
-    }
-
-    // BATCH 2: DRAGON WILD EXPAND — every reel that shows a Wild becomes a full Wild column (+ fire eruption).
-    private IEnumerator ExpandDragonWilds()
-    {
-        bool any = false;
-        for (int r = 0; r < reels.Length; r++)
-        {
-            bool hasWild = false;
-            for (int row = 0; row < PaylineSystem.Rows; row++)
-                if (grid[r, row] == SymbolDatabase.WildSymbol) { hasWild = true; break; }
-            if (hasWild)
-            {
-                for (int row = 0; row < PaylineSystem.Rows; row++) grid[r, row] = SymbolDatabase.WildSymbol;
-                if (reels[r] != null) reels[r].ExpandToWild();
-                any = true;
-            }
-        }
-        if (any)
-        {
-            if (AudioManager.Instance != null) AudioManager.Instance.PlayWin(1);
-            if (ScreenShake.Instance != null) ScreenShake.Instance.Shake(0.4f, 12f);
-            if (ScreenFlash.Instance != null) ScreenFlash.Instance.Flash(new Color(1f, 0.5f, 0.1f), 0.4f, 0.5f);
-            yield return new WaitForSeconds(0.55f);
         }
     }
 
