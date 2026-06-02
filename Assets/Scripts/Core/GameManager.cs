@@ -159,7 +159,14 @@ public class GameManager : MonoBehaviour
         if (isFreeSpin) totalWin *= FreeSpinMultiplier;
 
         bool isJackpot = false;
-        if (JackpotPool.TryHitJackpot()) { totalWin += JackpotPool.Claim(); isJackpot = true; }
+        JackpotPool.Tier jpTier = JackpotPool.TryHit();
+        if (jpTier != JackpotPool.Tier.None)
+        {
+            int jpAmount = JackpotPool.Claim(jpTier);
+            totalWin += jpAmount;
+            isJackpot = true;
+            if (ui != null) ui.ShowAchievementToastRaw($"<color=#ffd700>★ {JackpotPool.Names[(int)jpTier]} JACKPOT!</color>\n<size=80%>+{jpAmount:N0} koin</size>");
+        }
 
         int wildCount = CountSymbol(SymbolDatabase.WildSymbol);
         int scatterCount = CountSymbol(SymbolDatabase.ScatterSymbol);
@@ -196,15 +203,17 @@ public class GameManager : MonoBehaviour
             int tier = isJackpot ? 3 : (totalWin >= bet * 50 ? 2 : (totalWin >= bet * 10 ? 1 : 0));
             if (AudioManager.Instance != null) AudioManager.Instance.PlayWin(Mathf.Clamp(tier, 0, 2));
 
-            // POLISH #5: COIN SHOWER BOOST — Mega/Jackpot dapat large burst + multi-wave
+            // POLISH #5: COIN SHOWER — skala efek nyesuain tier. Jackpot pakai shower bertingkat (Mini kalem -> Grand epic).
             if (coinParticles != null && tier > 0) {
-                int particleTier = (tier >= 2) ? 2 : 0;
-                coinParticles.Burst(particleTier);
-                if (tier == 3) StartCoroutine(JackpotCoinWaves());
+                if (isJackpot) StartCoroutine(JackpotCoinShower(jpTier));
+                else coinParticles.Burst(tier >= 2 ? 2 : 0);
             }
 
-            if (tier >= 2 && ScreenShake.Instance != null) ScreenShake.Instance.Shake(tier == 3 ? 1.2f : 0.7f, tier == 3 ? 32f : 22f);
-            if (tier >= 2 && ScreenFlash.Instance != null) { Color c = tier == 3 ? new Color(1f,1f,0.4f) : new Color(1f,0.6f,0.2f); ScreenFlash.Instance.Flash(c, tier == 3 ? 0.6f : 0.4f, tier == 3 ? 0.85f : 0.6f); }
+            // Juice layar buat MEGA line win biasa (juice jackpot di-handle JackpotCoinShower per tier).
+            if (!isJackpot && tier == 2) {
+                if (ScreenShake.Instance != null) ScreenShake.Instance.Shake(0.7f, 22f);
+                if (ScreenFlash.Instance != null) ScreenFlash.Instance.Flash(new Color(1f, 0.6f, 0.2f), 0.4f, 0.6f);
+            }
 
             // POLISH #6: WIN LINE WAVE — winning cells nyala kolom per kolom dari kiri ke kanan
             yield return FlashWinCellsSequential(wins);
@@ -244,14 +253,35 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private IEnumerator JackpotCoinWaves()
+    // Hujan koin + juice layar yang skalanya nyesuain tier jackpot:
+    // MINI = secukupnya (tetap >= win MEGA biasa), GRAND = epic (koin saturasi + getar & flash terkuat).
+    private bool jackpotShowerRunning;
+    private IEnumerator JackpotCoinShower(JackpotPool.Tier t)
     {
-        for (int wave = 0; wave < 3; wave++)
+        if (jackpotShowerRunning) yield break;            // cegah shower numpuk (autospin/free-spin beruntun)
+        jackpotShowerRunning = true;
+
+        int idx = Mathf.Clamp((int)t, 0, 3);              // Mini=0 .. Grand=3
+        int[]   firstBurst = { 1, 2, 2, 3 };              // koin pembuka: 60 / 140 / 140 / 220(huge)
+        int[]   extraWaves = { 1, 1, 1, 4 };              // gelombang susulan: 1 / 1 / 1 / 4
+        int[]   waveBurst  = { 0, 0, 1, 2 };              // koin per gelombang: 25 / 25 / 60 / 140
+        float[] shakeMag   = { 16f, 22f, 28f, 36f };
+        float[] shakeDur   = { 0.35f, 0.45f, 0.60f, 1.00f };
+        Color[] flashCol   = { new Color(0.7f, 1f, 0.7f), new Color(0.6f, 0.9f, 1f), new Color(1f, 0.7f, 0.3f), new Color(1f, 1f, 0.45f) };
+        float[] flashInt   = { 0.55f, 0.65f, 0.78f, 0.92f };
+
+        if (coinParticles != null) coinParticles.Burst(firstBurst[idx]);
+        if (ScreenShake.Instance != null) ScreenShake.Instance.Shake(shakeDur[idx], shakeMag[idx]);
+        if (ScreenFlash.Instance != null) ScreenFlash.Instance.Flash(flashCol[idx], shakeDur[idx], flashInt[idx]);
+
+        for (int w = 0; w < extraWaves[idx]; w++)
         {
-            yield return new WaitForSeconds(0.5f);
-            if (coinParticles != null) coinParticles.Burst(2);
-            if (ScreenShake.Instance != null) ScreenShake.Instance.Shake(0.4f, 18f);
+            yield return new WaitForSeconds(0.45f);
+            if (coinParticles != null) coinParticles.Burst(waveBurst[idx]);
+            if (ScreenShake.Instance != null) ScreenShake.Instance.Shake(0.35f, shakeMag[idx] * 0.6f);
         }
+
+        jackpotShowerRunning = false;
     }
 
     private IEnumerator FlashWinCellsSequential(List<PaylineSystem.Win> wins)

@@ -177,7 +177,14 @@ public class UIController : MonoBehaviour
         winTextAnim = null;
     }
 
-    public void UpdateJackpot(int v) { if (jackpotText) jackpotText.text = $"JACKPOT: {v:N0}"; }
+    public void UpdateJackpot(int v) {
+        if (!jackpotText) return;
+        jackpotText.text =
+            $"<color=#ffd54a>GRAND</color> {JackpotPool.Get(JackpotPool.Tier.Grand):N0}   " +
+            $"<color=#ff9d3a>MAJOR</color> {JackpotPool.Get(JackpotPool.Tier.Major):N0}   " +
+            $"<color=#9de2ff>MINOR</color> {JackpotPool.Get(JackpotPool.Tier.Minor):N0}   " +
+            $"<color=#b6ffb0>MINI</color> {JackpotPool.Get(JackpotPool.Tier.Mini):N0}";
+    }
     public void UpdateAutoSpin(int v) { if (autoSpinText) autoSpinText.text = v > 0 ? $"AUTO: {v}" : ""; }
     public void UpdateFreeSpins(int v) { if (freeSpinText) freeSpinText.text = v > 0 ? $"FREE SPINS: {v}" : ""; }
 

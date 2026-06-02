@@ -21,6 +21,11 @@ public static class SaveSystem
     public static int Currency { get => PlayerPrefs.GetInt(K_CURRENCY, 1000); set => PlayerPrefs.SetInt(K_CURRENCY, value); }
     public static int Bet { get => PlayerPrefs.GetInt(K_BET, 10); set => PlayerPrefs.SetInt(K_BET, value); }
     public static int Jackpot { get => PlayerPrefs.GetInt(K_JACKPOT, 10000); set => PlayerPrefs.SetInt(K_JACKPOT, value); }
+    // Tiered jackpots: Mini / Minor / Major / Grand
+    public static int JpMini  { get => PlayerPrefs.GetInt("kk_jpMini",   1000);   set => PlayerPrefs.SetInt("kk_jpMini",   value); }
+    public static int JpMinor { get => PlayerPrefs.GetInt("kk_jpMinor",  5000);   set => PlayerPrefs.SetInt("kk_jpMinor",  value); }
+    public static int JpMajor { get => PlayerPrefs.GetInt("kk_jpMajor",  25000);  set => PlayerPrefs.SetInt("kk_jpMajor",  value); }
+    public static int JpGrand { get => PlayerPrefs.GetInt("kk_jpGrand",  100000); set => PlayerPrefs.SetInt("kk_jpGrand",  value); }
     public static string LastBonusDate { get => PlayerPrefs.GetString(K_LAST_BONUS, ""); set => PlayerPrefs.SetString(K_LAST_BONUS, value); }
     public static float Volume { get => PlayerPrefs.GetFloat(K_VOLUME, 0.7f); set => PlayerPrefs.SetFloat(K_VOLUME, Mathf.Clamp01(value)); }
     public static bool Muted { get => PlayerPrefs.GetInt(K_MUTED, 0) == 1; set => PlayerPrefs.SetInt(K_MUTED, value ? 1 : 0); }

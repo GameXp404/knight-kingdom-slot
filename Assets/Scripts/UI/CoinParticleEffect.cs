@@ -9,6 +9,8 @@ public class CoinParticleEffect : MonoBehaviour
     public int coinCountSmall = 25;
     public int coinCountMedium = 60;
     public int coinCountLarge = 140;
+    public int coinCountHuge = 220;
+    public int maxActiveCoins = 240;   // ceiling koin aktif: jaga performa WebGL biar gak spike pas Grand
 
     private List<RectTransform> pool = new List<RectTransform>();
     private Sprite coinSprite;
@@ -17,7 +19,7 @@ public class CoinParticleEffect : MonoBehaviour
 
     public void Burst(int tier)
     {
-        int count = tier switch { 0 => coinCountSmall, 1 => coinCountMedium, _ => coinCountLarge };
+        int count = tier switch { 0 => coinCountSmall, 1 => coinCountMedium, 2 => coinCountLarge, _ => coinCountHuge };
         StartCoroutine(BurstRoutine(count));
     }
 
@@ -27,6 +29,7 @@ public class CoinParticleEffect : MonoBehaviour
         float w = spawnArea.rect.width, h = spawnArea.rect.height;
         for (int i = 0; i < count; i++)
         {
+            if (CountActive() >= maxActiveCoins) yield break;   // ceiling tercapai — stop spawn burst ini
             var coin = GetCoin();
             coin.gameObject.SetActive(true);
             float startX = Random.Range(-w * 0.5f, w * 0.5f);
@@ -56,6 +59,13 @@ public class CoinParticleEffect : MonoBehaviour
             yield return null;
         }
         coin.gameObject.SetActive(false);
+    }
+
+    private int CountActive()
+    {
+        int n = 0;
+        for (int i = 0; i < pool.Count; i++) if (pool[i].gameObject.activeSelf) n++;
+        return n;
     }
 
     private RectTransform GetCoin()
