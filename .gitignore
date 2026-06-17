@@ -69,3 +69,12 @@ desktop.ini
 .vscode/launch.json
 .vscode/settings.json
 .idea/
+
+# --- backup hygiene 2026-06-17: Unity cache + stray scratch + local ---
+/Library/
+/Temp/
+/Logs/
+/obj/
+/My project/
+.vscode/
+.github_localbak/
