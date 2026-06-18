@@ -4,6 +4,8 @@
   <meta charset="utf-8">
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <title>Knight Kingdom Slot — GameGacor</title>
+  <!-- LOGIN GATE: produksi wajib login lobby; tanpa token calavera_lobby_token -> ke lobby. localhost/dev bebas. REQUIRE_LOGIN=false utk matikan. -->
+  <script>(function(){var REQUIRE_LOGIN=true;try{var isDev=/^(localhost|127\.0\.0\.1)$/.test(location.hostname)&&!localStorage.getItem('__gate_test');if(REQUIRE_LOGIN&&!isDev&&!localStorage.getItem('calavera_lobby_token')){location.replace('/lobby.html?login=1');}}catch(e){}})();</script>
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0,shrink-to-fit=yes">
   <link rel="shortcut icon" href="TemplateData/favicon.ico">
   <link rel="stylesheet" href="TemplateData/style.css">
